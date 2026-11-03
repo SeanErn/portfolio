@@ -4,12 +4,13 @@ import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
-import { ACCENT, INK, inked, mat } from './materials';
+import { ACCENT, INK, PAPER } from './materials';
 import { mulberry32 } from './headset/shared';
 
 /*
  * The FRC 2025 REEFSCAPE field as a technical drawing, built from the game manual's nominal
- * dimensions (section 5, ARENA) and the WPILib AprilTag layout. Everything is procedural.
+ * dimensions (section 5, ARENA), the WPILib AprilTag layout and measurements taken off the official
+ * field CAD (REEF pipe centerlines, CAGE heights). Everything is procedural.
  *
  * Field coordinates follow WPILib: meters, x from the blue ALLIANCE WALL toward red, y across the
  * field. The scene shifts them so the drive starts at the origin (where the headset is mounted) and
@@ -32,7 +33,7 @@ export const toScene = (x: number, y: number, h = 0) => new THREE.Vector3(x - ST
 export const FIELD_CENTER = toScene(MID_X, MID_Y);
 
 /** Each CORAL STATION cuts a field corner: this far along the side wall (x) and the alliance wall (y). */
-const STATION = { dx: 1.68, dy: 1.27, height: 1.75, slot: [0.95, 1.13] as const };
+const STATION = { dx: 1.68, dy: 1.27, height: 1.7, slot: [0.95, 1.13] as const };
 
 const REEF = {
 	/** Centers (blue, red): the near face is 12 ft from the ALLIANCE WALL. */
@@ -46,14 +47,23 @@ const REEF = {
 	trough: 0.46,
 	/** Two pipes per face, 1 ft 1 in apart. */
 	pipeLat: 0.165,
-	/** The vertical pipes stand 1 ft 2 in inside the face… */
-	pipeIn: 0.356,
-	/** …and kink out toward the face between these heights to form L4. */
-	bend: [1.4, 1.68] as const,
-	levels: { L2: 0.81, L3: 1.21, L4: 1.83 },
-	/** Highest points of the branches sit this far inside the base's face. */
-	branchInset: 0.041,
-	l4Inset: 0.029
+	/**
+	 * Pipe centerline as (distance from the REEF center, height): up the inside, a double bend out
+	 * toward the face, then straight up to L4. From the CAD.
+	 */
+	pipe: [
+		[0.526, 0.02],
+		[0.526, 1.37],
+		[0.569, 1.453],
+		[0.737, 1.57],
+		[0.78, 1.653],
+		[0.78, 1.826]
+	] as const,
+	/** L2/L3 branch tips (centerline) and the L4 top, and how far out they reach. */
+	levels: { L2: 0.792, L3: 1.194, L4: 1.826 },
+	branchReach: 0.777,
+	/** The core inside the pipes that holds the ALGAE: a hex apothem and height. */
+	core: [0.45, 0.8] as const
 };
 /** L2 and L3 branches rise toward the robot at 35°. */
 const BRANCH_TILT = THREE.MathUtils.degToRad(35);
@@ -254,11 +264,11 @@ export function buildField(resolution: THREE.Vector2, score: ScoreSolver) {
 				sk.seg(toScene(x + dx, a, net[1]), toScene(x + dx, b, net[1]));
 			}
 		}
-		// the CAGES hanging under the truss: shallow on the outside, deep in the middle
+		// the CAGES hanging under the truss: shallow in the middle of each three, deep either side
 		for (const s of [-1, 1])
 			cages.forEach((d, i) => {
 				const yc = MID_Y + s * d;
-				const bottom = i === 1 ? cage.deep : cage.shallow;
+				const bottom = i === 1 ? cage.shallow : cage.deep;
 				const h = cage.size / 2;
 				sk.box(v2(x - h, yc - h), v2(cage.size, 0), v2(0, cage.size), bottom, bottom + cage.height);
 				sk.seg(toScene(x, yc, bottom + cage.height), toScene(x, yc, truss[0]));
@@ -266,12 +276,21 @@ export function buildField(resolution: THREE.Vector2, score: ScoreSolver) {
 	}
 
 	// ---------------------------------------------------------------- REEFS
-	const reefBases: THREE.Mesh[] = [];
+	// drawn hidden-line style: filled with the paper color so it hides what's behind, edged in ink
+	const reefBases: THREE.Group[] = [];
+	const baseFill = new THREE.MeshBasicMaterial({
+		color: PAPER,
+		polygonOffset: true,
+		polygonOffsetFactor: 1,
+		polygonOffsetUnits: 1
+	});
 	const baseGeo = new THREE.CylinderGeometry(1, 1, REEF.trough, 6).scale(
 		REEF.apothem / Math.cos(Math.PI / 6),
 		1,
 		REEF.apothem / Math.cos(Math.PI / 6)
 	);
+	const baseEdgeMat = new LineMaterial({ color: INK.getHex(), linewidth: 2, transparent: true, opacity: 0 });
+	baseEdgeMat.resolution = resolution;
 	/** A point on a REEF face: `a` from the center along the face's normal, `l` along the face. */
 	const reefPt = (c: readonly [number, number], k: number, a: number, l: number, h: number) => {
 		const phi = (k * Math.PI) / 3;
@@ -280,40 +299,39 @@ export function buildField(resolution: THREE.Vector2, score: ScoreSolver) {
 		return toScene(c[0] + nx * a - ny * l, c[1] + ny * a + nx * l, h);
 	};
 	for (const c of REEF.centers) {
-		const base = inked(baseGeo, mat.shell, { hull: 0.012, crease: 40 });
+		const base = new THREE.Group();
+		base.add(
+			new THREE.Mesh(baseGeo, baseFill),
+			new LineSegments2(
+				new LineSegmentsGeometry().fromEdgesGeometry(new THREE.EdgesGeometry(baseGeo)),
+				baseEdgeMat
+			)
+		);
 		base.position.copy(toScene(c[0], c[1], REEF.trough / 2));
 		base.scale.setScalar(0.0001);
 		reefBases.push(base);
 		group.add(base);
 
-		const inner = REEF.apothem - REEF.pipeIn;
-		const ring: THREE.Vector3[] = [];
+		const inner = REEF.pipe[0][0];
 		for (let k = 0; k < 6; k++) {
 			for (const l of [-REEF.pipeLat, REEF.pipeLat]) {
 				const p = (a: number, h: number) => reefPt(c, k, a, l, h);
-				const lv = REEF.levels;
-				const top = REEF.apothem - REEF.l4Inset;
 				pipes.poly(
-					[p(inner, REEF.trough - 0.12), p(inner, REEF.bend[0]), p(top, REEF.bend[1]), p(top, lv.L4)],
+					REEF.pipe.map(([a, h]) => p(a, h)),
 					false,
 					true
 				);
-				const tip = REEF.apothem - REEF.branchInset;
-				const rise = (tip - inner) * Math.tan(BRANCH_TILT);
-				for (const h of [lv.L2, lv.L3]) pipes.seg(p(inner, h - rise), p(tip, h), true);
-				ring.push(p(inner, REEF.bend[0]));
+				const rise = (REEF.branchReach - inner) * Math.tan(BRANCH_TILT);
+				for (const h of [REEF.levels.L2, REEF.levels.L3]) pipes.seg(p(inner, h - rise), p(REEF.branchReach, h), true);
 			}
 		}
-		// a brace ring through the pipes and the central column, spoked to it
-		sk.poly(ring, true);
-		const col: THREE.Vector3[] = [];
-		for (let k = 0; k < 6; k++) col.push(reefPt(c, k, 0.17, 0.1, 0));
-		sk.poly(col.map((q) => q.clone().setY(REEF.trough)), true);
-		sk.poly(col.map((q) => q.clone().setY(REEF.bend[0] + 0.12)), true);
-		col.forEach((q, k) => {
-			sk.seg(q.clone().setY(REEF.trough), q.clone().setY(REEF.bend[0] + 0.12));
-			sk.seg(q.clone().setY(REEF.bend[0] + 0.12), ring[k * 2]);
-		});
+		// the core the pipes stand around
+		const [ca, ch] = REEF.core;
+		const core: THREE.Vector3[] = [];
+		for (let k = 0; k < 6; k++) core.push(reefPt(c, k, ca, -ca * Math.tan(Math.PI / 6), 0));
+		sk.poly(core.map((q) => q.clone().setY(REEF.trough)), true);
+		sk.poly(core.map((q) => q.clone().setY(ch)), true);
+		core.forEach((q) => sk.seg(q.clone().setY(REEF.trough), q.clone().setY(ch)));
 		// REEF ZONE tape
 		const zone: THREE.Vector3[] = [];
 		for (let k = 0; k < 6; k++) zone.push(reefPt(c, k, 1.185, -1.185 * Math.tan(Math.PI / 6), 0.004));
@@ -325,7 +343,7 @@ export function buildField(resolution: THREE.Vector2, score: ScoreSolver) {
 
 	const structMat = new LineMaterial({ color: INK.getHex(), linewidth: 1.4, transparent: true, opacity: 0 });
 	structMat.resolution = resolution;
-	const pipeMat = new LineMaterial({ color: INK.getHex(), linewidth: 2.6, transparent: true, opacity: 0 });
+	const pipeMat = new LineMaterial({ color: INK.getHex(), linewidth: 3, transparent: true, opacity: 0 });
 	pipeMat.resolution = resolution;
 	const tapeMat = new THREE.LineBasicMaterial({ color: INK, transparent: true, opacity: 0 });
 	group.add(
@@ -354,7 +372,7 @@ export function buildField(resolution: THREE.Vector2, score: ScoreSolver) {
 			break;
 		}
 	}
-	const tipA = REEF.apothem - (level === 'L4' ? REEF.l4Inset : REEF.branchInset);
+	const tipA = level === 'L4' ? REEF.pipe[REEF.pipe.length - 1][0] : REEF.branchReach;
 	const branchTip = reefPt(red, FACE, tipA, LAT, REEF.levels[level] + (level === 'L4' ? 0.03 : 0));
 
 	// a swerve robot can face anywhere: turn it until its scoring side looks down the approach
@@ -560,6 +578,7 @@ export function buildField(resolution: THREE.Vector2, score: ScoreSolver) {
 			outlineMat.opacity = vis;
 			structMat.opacity = 0.7 * vis;
 			pipeMat.opacity = vis;
+			baseEdgeMat.opacity = vis;
 			tapeMat.opacity = 0.35 * vis;
 			pointsMat.uniforms.opacity.value = vis;
 			reefBases.forEach((o) => o.scale.setScalar(Math.max(vis, 0.0001)));

@@ -164,11 +164,11 @@ export function buildChassis(root: THREE.Group) {
 		}
 	}
 
-	// electronics bay: battery at the back, PDH and roboRIO on the pan, a few wire runs
-	box(0.18, 0.17, 0.077, rmat.rubber, -0.15, 0.04 + 0.085, -0.25, g);
-	box(0.12, 0.05, 0.079, rmat.red, -0.15, 0.17, -0.25, g, 0);
-	box(0.2, 0.04, 0.11, rmat.black, -0.15, 0.06, -0.02, g);
-	box(0.14, 0.03, 0.1, rmat.silver, -0.16, 0.055, 0.17, g);
+	// electronics bay between the humps: battery on its side, PDH and roboRIO on the pan, wire runs
+	box(0.077, 0.17, 0.18, rmat.rubber, -0.22, 0.04 + 0.085, 0, g);
+	box(0.079, 0.05, 0.12, rmat.red, -0.22, 0.17, 0, g, 0);
+	box(0.13, 0.03, 0.2, rmat.black, -0.1, 0.053, 0, g);
+	box(0.05, 0.03, 0.14, rmat.silver, -0.29, 0.053, 0, g);
 	const wire = (pts: number[][], m: THREE.Material) =>
 		g.add(
 			ink(
@@ -183,10 +183,10 @@ export function buildChassis(root: THREE.Group) {
 				0
 			)
 		);
-	wire([[-0.1, 0.2, -0.22], [-0.06, 0.16, -0.12], [-0.08, 0.09, -0.04]], rmat.sleeve);
-	wire([[-0.2, 0.2, -0.22], [-0.22, 0.14, -0.12], [-0.2, 0.09, -0.05]], rmat.rubber);
-	wire([[-0.08, 0.08, 0.03], [0.0, 0.12, 0.08], [0.06, 0.1, -0.02], [0.12, 0.2, -0.05]], rmat.sleeve);
-	wire([[-0.22, 0.08, 0.03], [-0.25, 0.1, 0.12], [-0.2, 0.08, 0.2]], rmat.rubber);
+	wire([[-0.2, 0.21, 0.04], [-0.15, 0.16, 0.06], [-0.1, 0.075, 0.06]], rmat.sleeve);
+	wire([[-0.24, 0.21, -0.04], [-0.17, 0.15, -0.07], [-0.11, 0.075, -0.06]], rmat.rubber);
+	wire([[-0.06, 0.07, 0.08], [0.0, 0.12, 0.09], [0.03, 0.12, 0.04]], rmat.sleeve);
+	wire([[-0.15, 0.07, -0.08], [-0.22, 0.09, -0.11], [-0.28, 0.07, -0.06]], rmat.rubber);
 
 	return g;
 }

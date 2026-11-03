@@ -5,19 +5,19 @@ import { at, box, cyl, ink, rmat, span } from './kit';
 
 /*
  * Everything above the deck except the end effector:
- *  - the carbon-fiber electronics hump along the front (angled top, chamfered ends, arch cut-out,
- *    carry handle);
- *  - the radio standing at front-center with the Quest mast behind it and the Allen-Bradley beacon
- *    on top;
- *  - the two-stage cascade elevator (black 2x1 uprights in the y-z plane, chain and bearings on the
- *    front, blue LED strip) slightly to the robot's left of center, and its carriage;
- *  - two red-sleeved braces from the elevator top down to the robot's right side.
+ *  - two carbon-fiber electronics humps, mirrored front and back (angled top, chamfered ends, arch
+ *    cut-out, carry handle), joined by a carbon wall along the right side;
+ *  - the radio standing at front-center in the front hump's notch, the Quest on a post beside it and
+ *    the Allen-Bradley beacon above;
+ *  - the two-stage cascade elevator between the humps (black 2x1 uprights in the y-z plane, chain and
+ *    bearings on the front, blue LED strip) slightly to the robot's left of center, and its carriage;
+ *  - two red-sleeved braces, an A-frame from the elevator top down to the right ends of the humps.
  */
 
 /** Elevator: stage-1 upright centers. */
 export const EX = 0.095;
-const ZF = 0.03;
-const ZB = -0.27;
+const ZF = 0.08;
+const ZB = -0.12;
 const ZC = (ZF + ZB) / 2;
 const TW = 0.0508; // tube along x
 const TD = 0.0254; // tube along z
@@ -31,6 +31,9 @@ export const PIVOT = new THREE.Vector3(0.19, 0.4, ZC);
 /** Quest visor center (headset +z forward). */
 export const MOUNT = new THREE.Vector3(0.1, 0.47, 0.155);
 
+/** Inner face of each hump (|z|); the elevator stands between them. */
+const HUMP_IN = 0.145;
+
 function hump(g: THREE.Object3D) {
 	const xb = 0.345;
 	const xt = 0.3;
@@ -38,8 +41,8 @@ function hump(g: THREE.Object3D) {
 	const yf = 0.235;
 	const yt = 0.3;
 	const zf = 0.34;
-	const zs = 0.21;
-	const zr = 0.115;
+	const zs = 0.24;
+	const zr = HUMP_IN;
 	const pts: THREE.Vector3[] = [];
 	for (const s of [-1, 1]) {
 		pts.push(
@@ -70,24 +73,35 @@ function hump(g: THREE.Object3D) {
 	at(front, -0.02, yf - 0.0225, zf + 0.0015, g);
 
 	// carry handle on the flat top
-	for (const z of [0.13, 0.2]) box(0.012, 0.04, 0.012, rmat.silver, -0.17, yt + 0.02, z, g, 0.0012);
-	box(0.016, 0.016, 0.1, rmat.black, -0.17, yt + 0.045, 0.165, g, 0.0015);
+	for (const z of [0.16, 0.225]) box(0.012, 0.04, 0.012, rmat.silver, -0.17, yt + 0.02, z, g, 0.0012);
+	box(0.016, 0.016, 0.09, rmat.black, -0.17, yt + 0.045, 0.1925, g, 0.0015);
+}
 
-	// carbon side wall running back along the right side
-	box(0.004, 0.2, 0.26, rmat.carbon, -0.326, DECK_Y + 0.1, -0.02, g, 0.002);
+/** Front hump, plus its mirror image across the robot's center for the back. */
+function humps(g: THREE.Object3D) {
+	const front = new THREE.Group();
+	hump(front);
+	g.add(front);
+	const back = front.clone();
+	back.scale.z = -1;
+	g.add(back);
+	// carbon wall along the right side, between the humps
+	box(0.004, 0.2, 2 * HUMP_IN, rmat.carbon, -0.326, DECK_Y + 0.1, 0, g, 0.002);
 }
 
 function mast(g: THREE.Object3D) {
 	const x = MOUNT.x;
 	// radio standing on edge at front-center, with status LEDs and a label
-	box(0.055, 0.17, 0.1, rmat.black, x, 0.325, 0.155, g, 0.002);
-	box(0.012, 0.11, 0.002, rmat.coral, x - 0.012, 0.33, 0.2055, g, 0);
-	for (let i = 0; i < 3; i++) box(0.005, 0.005, 0.002, rmat.ledGreen, x + 0.014, 0.29 + i * 0.016, 0.2055, g, 0);
-	// aluminum post behind it, printed cradle under the visor
-	box(0.02, 0.37, 0.02, rmat.silver, x, 0.375, 0.095, g, 0.0015);
+	box(0.055, 0.17, 0.09, rmat.black, x, 0.325, 0.155, g, 0.002);
+	box(0.012, 0.11, 0.002, rmat.coral, x - 0.012, 0.33, 0.2005, g, 0);
+	for (let i = 0; i < 3; i++) box(0.005, 0.005, 0.002, rmat.ledGreen, x + 0.014, 0.29 + i * 0.016, 0.2005, g, 0);
+	// aluminum post beside it (on the robot's right), printed cradle under the visor
+	const px = x - 0.105;
+	box(0.02, 0.37, 0.02, rmat.silver, px, 0.375, 0.15, g, 0.0015);
 	box(0.1, 0.006, 0.075, rmat.red, x, 0.413, 0.158, g, 0.0015);
-	// beacon bracket and the Allen-Bradley beacon above the headset
-	box(0.04, 0.005, 0.085, rmat.silver, x, 0.5625, 0.13, g, 0.0012);
+	box(0.055, 0.006, 0.02, rmat.red, px + 0.0275, 0.413, 0.15, g, 0.0012);
+	// beacon bracket reaching over from the post, and the Allen-Bradley beacon above the headset
+	box(x - px + 0.03, 0.005, 0.03, rmat.silver, (x + px) / 2 + 0.005, 0.5625, 0.145, g, 0.0012);
 	cyl(0.022, 0.02, 'y', rmat.black, x, 0.575, 0.145, g, { seg: 18 });
 	cyl(0.02, 0.014, 'y', rmat.beacon, x, 0.592, 0.145, g, { seg: 18, hull: 0.0015 });
 	const dome = new THREE.SphereGeometry(0.02, 18, 6, 0, Math.PI * 2, 0, Math.PI / 2);
@@ -97,14 +111,14 @@ function mast(g: THREE.Object3D) {
 export function buildSuperstructure(root: THREE.Group) {
 	const g = new THREE.Group();
 	root.add(g);
-	hump(g);
+	humps(g);
 	mast(g);
 
 	// --- stage 1 (fixed) ---
 	const s1Top = 1.11;
 	const s1Bot = DECK_Y + 0.025;
 	const s1H = s1Top - s1Bot;
-	box(0.05, 0.025, 0.36, rmat.black, EX, DECK_Y + 0.0125, ZC, g); // base rail
+	box(0.05, 0.025, ZF - ZB + 0.05, rmat.black, EX, DECK_Y + 0.0125, ZC, g); // base rail
 	for (const z of [ZF, ZB]) {
 		box(TW, s1H, TD, rmat.black, EX, (s1Top + s1Bot) / 2, z, g, 0.0025);
 		// base gussets
@@ -129,14 +143,14 @@ export function buildSuperstructure(root: THREE.Group) {
 		const m = cyl(0.03, 0.07, 'x', rmat.black, EX - TW / 2 - 0.045, DECK_Y + 0.06, z, g, { seg: 18 });
 		cyl(0.027, 0.012, 'x', rmat.silver, -0.04, 0, 0, m, { seg: 18, hull: 0 });
 	}
-	box(0.04, 0.07, 0.2, rmat.black, EX - TW / 2 - 0.0, DECK_Y + 0.06, ZC, g, 0.002);
+	box(0.04, 0.07, 0.16, rmat.black, EX - TW / 2, DECK_Y + 0.06, ZC, g, 0.002);
 
-	// --- braces from the elevator top down to the right side ---
+	// --- braces: an A-frame from the elevator top down to the right ends of both humps ---
 	const tubeGeo = new THREE.CylinderGeometry(0.011, 0.011, 1, 10, 1);
 	const tieGeo = new THREE.CylinderGeometry(0.0128, 0.0128, 0.006, 10);
 	const braceEnds: [THREE.Vector3, THREE.Vector3][] = [
-		[new THREE.Vector3(EX - TW / 2 - 0.012, 0.95, ZF), new THREE.Vector3(-0.255, 0.305, 0.175)],
-		[new THREE.Vector3(EX - TW / 2 - 0.012, 0.95, ZB), new THREE.Vector3(-0.3, DECK_Y + 0.01, -0.1)]
+		[new THREE.Vector3(EX - TW / 2 - 0.012, 0.95, ZF), new THREE.Vector3(-0.27, 0.305, 0.19)],
+		[new THREE.Vector3(EX - TW / 2 - 0.012, 0.95, ZB), new THREE.Vector3(-0.27, 0.305, -0.19)]
 	];
 	for (const [a, b] of braceEnds) {
 		g.add(span(ink(tubeGeo, rmat.sleeve, 0.0022, 0), a, b));
@@ -166,10 +180,13 @@ export function buildSuperstructure(root: THREE.Group) {
 	// --- carriage (rides stage 2; origin on the wrist pivot) ---
 	const carriage = new THREE.Group();
 	at(carriage, PIVOT.x, PIVOT.y, PIVOT.z, stage2);
-	box(0.04, 0.12, 0.2, rmat.black, s2x - PIVOT.x, -0.04, 0, carriage, 0.002);
-	for (const s of [-1, 1]) box(0.13, 0.12, 0.006, rmat.black, -0.035, -0.035, s * 0.1, carriage, 0.0018);
+	// a block riding between the stage-2 tubes, a cross plate outboard of them, and two side plates
+	// that carry the wrist shaft (the side plates clear the uprights in x)
+	box(0.04, 0.12, 0.11, rmat.black, s2x - PIVOT.x, -0.04, 0, carriage, 0.002);
+	box(0.01, 0.12, 0.186, rmat.black, 0.145 - PIVOT.x, -0.04, 0, carriage, 0.0018);
+	for (const s of [-1, 1]) box(0.08, 0.12, 0.006, rmat.black, -0.005, -0.035, s * 0.09, carriage, 0.0018);
 	// wrist motor on the back plate, coaxial with the pivot
-	const wm = cyl(0.03, 0.07, 'z', rmat.black, 0, 0, -0.1 - 0.003 - 0.035, carriage, { seg: 18 });
+	const wm = cyl(0.03, 0.07, 'z', rmat.black, 0, 0, -0.09 - 0.003 - 0.035, carriage, { seg: 18 });
 	cyl(0.027, 0.012, 'z', rmat.silver, 0, 0, -0.035, wm, { seg: 18, hull: 0 });
 
 	// --- braided cable from the top of the elevator down to the carriage (re-hung on every pose) ---
@@ -180,11 +197,11 @@ export function buildSuperstructure(root: THREE.Group) {
 		g.add(m);
 		return m;
 	});
-	const A = new THREE.Vector3(EX + TW / 2 + 0.01, s1Top - 0.03, ZB + 0.02);
+	const A = new THREE.Vector3(EX + TW / 2 + 0.01, s1Top - 0.03, ZB - 0.015);
 	const curve = new THREE.QuadraticBezierCurve3(A, new THREE.Vector3(), new THREE.Vector3());
 	const pts = Array.from({ length: N + 1 }, () => new THREE.Vector3());
 	const hang = (carriageY: number) => {
-		const B = curve.v2.set(PIVOT.x - 0.06, carriageY - 0.07, ZB + 0.035);
+		const B = curve.v2.set(PIVOT.x - 0.06, carriageY - 0.07, ZB - 0.015);
 		const sag = 0.18 + 0.12 * Math.min(1, Math.abs(B.y - A.y));
 		curve.v1.copy(A).add(B).multiplyScalar(0.5).add(new THREE.Vector3(sag, -0.1, 0));
 		pts.forEach((p, i) => curve.getPoint(i / N, p));

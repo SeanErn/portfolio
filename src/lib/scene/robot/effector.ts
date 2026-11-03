@@ -77,8 +77,8 @@ export function buildEffector() {
 	box(ROLLS[2] - ROLLS[0], 0.034, 0.008, rmat.rubber, HELD.x, ROLL_Y, zb, arm, 0.0015);
 
 	// Kraken X60 on the outboard face, belted up to the first roller
-	const mx = 0.035;
-	const my = 0.13;
+	const mx = 0.06;
+	const my = 0.12;
 	const motor = cyl(0.03, 0.075, 'z', rmat.black, mx, my, PLATE_Z + 0.004 + 0.0375, arm, { seg: 20, hull: 0.002 });
 	cyl(0.027, 0.012, 'z', rmat.silver, 0, 0, 0.04, motor, { seg: 20, hull: 0 });
 	cyl(0.014, 0.012, 'z', rmat.silver, mx, my, zb, arm, { seg: 12, hull: 0 });
