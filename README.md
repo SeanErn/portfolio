@@ -21,16 +21,16 @@ The phone number is deliberately not in the YAML, so it never lands in git histo
 
 ## CI
 
-`.github/workflows/ci.yml` runs on every push to `main` and on pull requests:
+- **`ci.yml`** (every push to `main` and every PR): renders a public, phone-free PDF from `cv/resume.yaml`, drops it
+  into `static/`, then runs `npm run check` and `npm run build` (artifacts `cv` and `site`).
+- **`cv.yml`** (pushes to `main` that change `cv/`, or run by hand): renders the full résumé with the phone number from
+  the `CV_PHONE` repo secret and publishes it as a release of this private repo. It refuses to run if the repo is ever
+  made public, since releases would become public too.
 
-1. **Render CV**: renders `cv/resume.yaml` to PDF (artifact `cv`).
-2. **Build website**: drops that PDF into `static/`, then runs `npm run check` and `npm run build` (artifact `site`).
-
-To also get a private, full résumé with your phone number (artifact `cv-full-private`, kept 7 days), add a repo
-secret named `CV_PHONE`:
+Latest full résumé:
 
 ```sh
-gh secret set CV_PHONE
+gh release download --repo SeanErn/signal-path --pattern '*.pdf'
 ```
 
 ## Layout

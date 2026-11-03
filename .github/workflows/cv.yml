@@ -1,0 +1,59 @@
+name: Publish CV
+
+# Renders the full résumé (with the phone number from the CV_PHONE secret) and publishes it as a
+# release of this private repo, only when the CV source changes.
+on:
+  push:
+    branches: [main]
+    paths:
+      - cv/**
+      - .github/workflows/cv.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-cv
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Render and publish CV
+    runs-on: ubuntu-latest
+    # Releases of a public repo are public, and this PDF carries the phone number.
+    if: github.event.repository.private
+    env:
+      CV_PHONE: ${{ secrets.CV_PHONE }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install RenderCV and the Carlito font
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q fonts-crosextra-carlito
+          pip install "rendercv[full]==2.8"
+
+      - name: Render full CV
+        run: |
+          if [ -z "$CV_PHONE" ]; then
+            echo "::error::The CV_PHONE secret is not set."
+            exit 1
+          fi
+          rendercv render cv/resume.yaml --cv.phone "$CV_PHONE" --output-folder "$PWD/build/cv" \
+            --dont-generate-png --dont-generate-html --dont-generate-markdown
+          mv build/cv/Sean_Ernstes_RESUME.pdf build/cv/Sean_Ernstes_Resume.pdf
+
+      - name: Publish as a private release
+        run: |
+          tag="cv-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+          gh release create "$tag" build/cv/Sean_Ernstes_Resume.pdf \
+            --title "Résumé · $(date -u +%Y-%m-%d)" \
+            --notes "Rendered from cv/resume.yaml at ${GITHUB_SHA::7}." \
+            --target "$GITHUB_SHA" \
+            --latest
