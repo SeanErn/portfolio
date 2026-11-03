@@ -74,6 +74,8 @@
 <style>
 	main {
 		position: relative;
+		/* own stacking context, so the trace's z-index: -1 stays above the page background */
+		isolation: isolate;
 	}
 	.chrome {
 		position: fixed;

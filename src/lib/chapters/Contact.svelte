@@ -2,12 +2,12 @@
 	/**
 	 * J8 — where the trace terminates. The bottom of the page is the board's edge, with an edge
 	 * connector; the copper lead runs down the rail and lands on finger 1, the email net.
-	 * Progress is a pure function of scroll (the lead finishes exactly at the bottom of the page);
-	 * under /lab the forced progress is used instead.
+	 * The lead is drawn complete, never stretched with scroll (scroll-linked drawing lags and jitters in
+	 * Firefox); scroll only decides when the email net lights up. Under /lab the forced progress is used.
 	 */
 	import { getContext, onMount } from 'svelte';
 	import { asset, resolve } from '$app/paths';
-	import { FORCED_PROGRESS, clamp, seg } from '../kit/motion';
+	import { FORCED_PROGRESS, clamp } from '../kit/motion';
 	import { person, resumePdf } from '../content';
 
 	const forced = getContext<number | undefined>(FORCED_PROGRESS);
@@ -32,7 +32,6 @@
 	const nets = ['Mail', 'GitHub', 'LinkedIn', 'Résumé', 'Simple'];
 
 	const landed = $derived(p >= 0.985);
-	const stub = $derived(wide ? 1 : seg(p, 0.4, 1)); // on phones the lead starts inside the strip
 
 	onMount(() => {
 		if (forced !== undefined) return;
@@ -59,7 +58,7 @@
 
 <div class="chapter" id="contact" data-chapter="contact" bind:this={root} class:landed>
 	{#if wide}
-		<i class="lead" aria-hidden="true" style:left="{x0 - 1.75}px" style:bottom="{EH - FT}px" style:transform="scaleY({p})"></i>
+		<i class="lead" aria-hidden="true" style:left="{x0 - 1.75}px" style:bottom="{EH - FT}px"></i>
 	{/if}
 
 	<div class="body">
@@ -110,7 +109,7 @@
 			/>
 			<!-- lead into finger 1 (phones: the rail trace is hidden, so it starts here) -->
 			{#if !wide}
-				<line class="cu" x1={x0} y1="0" x2={x0} y2={FT * stub} />
+				<line class="cu" x1={x0} y1="0" x2={x0} y2={FT} />
 			{/if}
 			{#each Array(n) as _, i}
 				{@const x = x0 + i * PITCH}
@@ -139,7 +138,6 @@
 		top: 40px;
 		width: 3.5px;
 		background: var(--accent);
-		transform-origin: top;
 		z-index: 7;
 	}
 	.body {

@@ -4,8 +4,9 @@
 	 * ([data-chapter]), jogging 45° between two lanes, and is "etched" up to just below the middle
 	 * of the viewport as you scroll. The unetched remainder shows as a faint ratsnest line.
 	 *
-	 * The etch is a CSS scroll-driven animation on its own layer, so it moves on the browser's scroll
-	 * thread and can't lag behind the page. Browsers without scroll timelines get it fully etched.
+	 * No scroll-linked JS or animation moves anything here, so it can't jitter in any browser: the full
+	 * copper trace sits under the page content, and a paper-colored cover that is position: sticky at
+	 * 58vh hides the part below that line. Sticky is handled by the browser's own scrolling.
 	 */
 	import { onMount } from 'svelte';
 	import { chapters } from '../content';
@@ -17,8 +18,6 @@
 	let d = $state('');
 	let vias = $state<{ x: number; y: number; ref: string }[]>([]);
 	let etched = $state(0);
-	/** How far the page can scroll; the etch animation spans exactly this. */
-	let travel = $state(0);
 
 	function route() {
 		height = document.documentElement.scrollHeight;
@@ -38,7 +37,6 @@
 		path += ` L ${x} ${height - 40}`;
 		d = path;
 		vias = pts;
-		travel = Math.max(0, height - innerHeight);
 	}
 
 	onMount(() => {
@@ -57,10 +55,11 @@
 	});
 </script>
 
-<div class="trace" style:height="{height}px" style:--h="{height}px" style:--travel="{travel}px" aria-hidden="true">
-	<svg viewBox="0 0 88 {height}"><path class="rat" {d} /></svg>
-	<svg class="copper" viewBox="0 0 88 {height}"><path class="cu" {d} /></svg>
+<div class="trace" style:height="{height}px" aria-hidden="true">
+	<svg viewBox="0 0 88 {height}"><path class="cu" {d} /></svg>
+	<div class="cover"></div>
 	<svg viewBox="0 0 88 {height}">
+		<path class="rat" {d} />
 		{#each vias as v}
 			<g class="via" class:on={etched >= v.y}>
 				<circle cx={v.x} cy={v.y} r="7" />
@@ -77,7 +76,8 @@
 		left: 0;
 		width: 88px;
 		pointer-events: none;
-		z-index: 6;
+		/* under the page content (which is transparent over the rail), above the page background */
+		z-index: -1;
 	}
 	.trace svg {
 		position: absolute;
@@ -86,20 +86,12 @@
 		height: 100%;
 		overflow: visible;
 	}
-	/* etched copper: clipped to 58% down the viewport, driven by the page's own scroll */
-	@supports (animation-timeline: scroll()) {
-		.copper {
-			animation: etch linear both;
-			animation-timeline: scroll(root block);
-		}
-	}
-	@keyframes etch {
-		from {
-			clip-path: inset(0 0 calc(var(--h) - 58vh) 0);
-		}
-		to {
-			clip-path: inset(0 0 calc(var(--h) - 58vh - var(--travel)) 0);
-		}
+	/* hides the unetched copper: pinned 58% down the screen, reaching to the bottom of it */
+	.cover {
+		position: sticky;
+		top: 58vh;
+		height: 42vh;
+		background: var(--paper);
 	}
 	path {
 		fill: none;

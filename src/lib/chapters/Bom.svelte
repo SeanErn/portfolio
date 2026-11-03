@@ -192,7 +192,7 @@
 		vertical-align: baseline;
 	}
 
-	/* placement: everything but the courtyard drops in with --r */
+	/* placement: everything but the courtyard fades in with --r (no movement: scroll-linked motion jitters in Firefox) */
 	td > * {
 		display: inline-block;
 	}
@@ -205,7 +205,6 @@
 	.part,
 	td.note {
 		opacity: calc(0.1 + 0.9 * var(--r));
-		translate: 0 calc((1 - var(--r)) * -10px);
 	}
 	.item {
 		font-size: 11px;
