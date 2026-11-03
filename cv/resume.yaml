@@ -1,0 +1,129 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/rendercv/rendercv/refs/tags/v2.8/schema.json
+cv:
+  name: Sean Ernstes
+  location: Kalamazoo, MI 49009
+  email: seanern@gatech.edu
+  photo:
+  website:
+  social_networks:
+    - network: GitHub
+      username: SeanErn
+    - network: LinkedIn
+      username: seanernstes
+  headline: Computer Engineering Student & Open-Source Maintainer
+  custom_connections:
+  sections:
+    professional_summary:
+      - Computer Engineering student with hands-on robotics software experience, including a cross-platform Visual SLAM pipeline (Unity/C#, Java) adopted by teams worldwide with 150+ GitHub stars and 400+ commits. Skilled in Java, C#, computer vision, sensor fusion, and Kalman filtering. Led a 7-person software team to 12+ awards and a 4-person IT crew that deployed 2,200+ devices 12x faster via automation. 4.0 GPA. Seeking SoC, chip, or PCB design co-ops starting fall 2027.
+    education:
+      - institution: Georgia Institute of Technology
+        area: Computer Engineering
+        degree: BS
+        date: June 2026 – Expected 2030
+        location:
+        summary:
+        highlights:
+          - 'GPA: 4.0'
+          - 'Relevant Coursework: Digital Systems Design, Object Oriented Programming'
+    skills:
+      - label: Technical Skills
+        details: Java, C#, Git, Object-Oriented Programming (OOP), Computer Vision, Visual SLAM, Sensor Fusion, Kalman Filtering, Robotics, Autonomous Systems, Unity, Protocol Buffers, CI/CD, Database Administration
+      - label: Professional Skills
+        details: Team Leadership, Software Project Management, Problem Solving, Delegation, Conflict Resolution, Time Management, Communication, Coaching/Onboarding, Project Coordination
+    leadership:
+      - label: Leadership
+        details: Student Council Representative (4 years), Class Officer (4 years), FIRST Robotics Programming Team Captain (3 years), Chick-fil-A Shift Leader (2 years), QuestNav Project Core Maintainer
+    experience:
+      - company: QuestNav
+        position: Lead Maintainer
+        date:
+        start_date: 2025-02
+        end_date: present
+        location: Remote
+        summary:
+        highlights:
+          - Architected cross-platform VSLAM pipeline (Unity/C#, Java, Vue) for robotics localization on Meta Quest 3
+          - Grew project to 140+ stars, 80+ forks, 400+ commits across 20+ releases; adopted as vendor dependency by FRC teams worldwide
+          - Built multi-language CI/CD pipeline (GitHub Actions) with automated builds, doc generation, and multi-target releases
+      - company: Chick-fil-A
+        position: Manager In Training (Shift Leader)
+        date:
+        start_date: 2023-07
+        end_date: present
+        location: Kalamazoo, MI
+        summary:
+        highlights:
+          - Coordinated team positioning and workflow for a crew of 15 employees during peak hours serving 500+ guests/day, maintaining speed-of-service under 5 minutes
+          - Trained and onboarded 2 new employees on food safety and brand standards, achieving 100% health inspection compliance
+          - Resolved operational disruptions per shift (equipment, staffing, order errors) to sustain guest satisfaction scores above 88%
+      - company: FRC 5152
+        position: Software Team Lead
+        date:
+        start_date: 2022-10
+        end_date: 2026-05
+        location: Otsego, MI
+        summary:
+        highlights:
+          - Self-taught Java/WPILib to lead software development across 4 seasons, advancing to Software Lead
+          - Managed and trained a team of 7, building a sustainable technical talent pipeline
+          - Programmed autonomous/vision systems earning 12+ awards; helped team qualify for FIRST World Championship twice
+      - company: Otsego Public Schools
+        position: IT Intern
+        date:
+        start_date: 2022-06
+        end_date: 2022-08
+        location: Otsego, MI
+        summary:
+        highlights:
+          - Deployed 2,200+ Chromebooks across 5 schools in 8 weeks as part of a 4-person IT team
+          - Automated enterprise enrollment with an Arduino keystroke-emulation tool, accelerating throughput 12x
+          - Asset-tagged and logged all devices into a centralized inventory database
+    activities:
+      - label: Activities
+        details: FIRST Robotics, Boy Scouts (Eagle Scout 2025), Tennis, National Honors Society, Student Council, ChiPhi Fraternity Member, Georgia Tech Propulsive Landers Avionics Team
+design:
+  theme: engineeringresumes
+  page:
+    size: us-letter
+    top_margin: 0.5in
+    bottom_margin: 0.5in
+    left_margin: 0.7in
+    right_margin: 0.7in
+  typography:
+    line_spacing: 0.5em
+    font_family: Carlito
+    font_size:
+      body: 10.5pt
+      name: 20pt
+      headline: 14pt
+  sections:
+    space_between_regular_entries: 0.25em
+  entries:
+    date_and_location_width: 5cm
+    highlights:
+      space_above: 0cm
+      space_between_items: 0.05em
+  header:
+    space_below_name: 0.3em
+    space_below_headline: 0.5em
+    space_below_connections: 1.5em
+locale:
+  language: english
+settings:
+  current_date: today
+  render_command:
+    output_folder: rendercv_output
+    design:
+    locale:
+    typst_path: OUTPUT_FOLDER/NAME_IN_SNAKE_CASE_RESUME.typ
+    pdf_path: OUTPUT_FOLDER/NAME_IN_SNAKE_CASE_RESUME.pdf
+    markdown_path: OUTPUT_FOLDER/NAME_IN_SNAKE_CASE_RESUME.md
+    html_path: OUTPUT_FOLDER/NAME_IN_SNAKE_CASE_RESUME.html
+    png_path: OUTPUT_FOLDER/NAME_IN_SNAKE_CASE_RESUME.png
+    dont_generate_markdown: false
+    dont_generate_html: false
+    dont_generate_typst: false
+    dont_generate_pdf: false
+    dont_generate_png: true
+  bold_keywords: []
+  pdf_title: Sean Ernstes - Resume

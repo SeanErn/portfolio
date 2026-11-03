@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cv:
+    name: Render CV
+    runs-on: ubuntu-latest
+    env:
+      # Optional repo secret. When set, a full CV with the phone number is rendered as a
+      # short-lived private artifact; the public PDF on the site never includes it.
+      CV_PHONE: ${{ secrets.CV_PHONE }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+
+      - name: Install RenderCV and the Carlito font
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q fonts-crosextra-carlito
+          pip install "rendercv[full]==2.8"
+
+      - name: Render public CV (no phone number)
+        run: |
+          rendercv render cv/resume.yaml --output-folder "$PWD/build/cv" \
+            --dont-generate-png --dont-generate-html
+          mv build/cv/Sean_Ernstes_RESUME.pdf build/cv/Sean_Ernstes_Resume.pdf
+
+      - name: Render full CV (with phone number)
+        if: env.CV_PHONE != ''
+        run: |
+          rendercv render cv/resume.yaml --cv.phone "$CV_PHONE" --output-folder "$PWD/build/cv-full" \
+            --dont-generate-png --dont-generate-html --dont-generate-markdown
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: cv
+          path: |
+            build/cv/Sean_Ernstes_Resume.pdf
+            build/cv/*.md
+
+      - uses: actions/upload-artifact@v7
+        if: env.CV_PHONE != ''
+        with:
+          name: cv-full-private
+          path: build/cv-full/*.pdf
+          retention-days: 7
+
+  site:
+    name: Build website
+    needs: cv
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Use the freshly rendered CV
+        uses: actions/download-artifact@v8
+        with:
+          name: cv
+          path: build/cv
+
+      - run: cp build/cv/Sean_Ernstes_Resume.pdf static/Sean_Ernstes_Resume.pdf
+
+      - run: npm run check
+
+      - run: npm run build
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: site
+          path: .svelte-kit/output
+          retention-days: 14

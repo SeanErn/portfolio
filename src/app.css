@@ -1,0 +1,114 @@
+:root {
+	--paper: #e9e7e1;
+	--paper-2: #dedbd2;
+	--ink: #141413;
+	--ink-2: #57554e;
+	--rule: rgba(20, 20, 19, 0.18);
+	--accent: #e5461d;
+	--sans: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+	--mono: 'IBM Plex Mono', ui-monospace, monospace;
+	--gutter: clamp(16px, 3.2vw, 44px);
+	/* left inset for content: room for the copper trace on desktop */
+	--rail: var(--gutter);
+	color-scheme: light;
+}
+
+/*
+ * Palettes. Pick one with <html data-palette="…"> (the top-bar swatches, or ?palette= in the URL).
+ * --chrome-blend lets the fixed top bar multiply over light paper but not over dark paper.
+ */
+:root {
+	--chrome-blend: multiply;
+}
+:root[data-palette='kraft'] {
+	--paper: #d9cdb5;
+	--paper-2: #cbbda2;
+	--ink: #231a12;
+	--ink-2: #5f5141;
+	--rule: rgba(35, 26, 18, 0.2);
+	--accent: #a94e1c;
+}
+:root[data-palette='drafting'] {
+	--paper: #f2f1ec;
+	--paper-2: #e3e2db;
+	--ink: #11141b;
+	--ink-2: #585c67;
+	--rule: rgba(17, 20, 27, 0.16);
+	--accent: #2347c9;
+}
+:root[data-palette='solder'] {
+	--paper: #101712;
+	--paper-2: #1a241d;
+	--ink: #e8e5d8;
+	--ink-2: #98a297;
+	--rule: rgba(232, 229, 216, 0.17);
+	--accent: #d5a347;
+	--chrome-blend: normal;
+	color-scheme: dark;
+}
+:root[data-palette='cyanotype'] {
+	--paper: #16385a;
+	--paper-2: #1e466c;
+	--ink: #eef3f6;
+	--ink-2: #a8bfd2;
+	--rule: rgba(238, 243, 246, 0.2);
+	--accent: #f2c94c;
+	--chrome-blend: normal;
+	color-scheme: dark;
+}
+
+@media (min-width: 821px) {
+	:root {
+		--rail: 88px;
+	}
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	background: var(--paper);
+	color: var(--ink);
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--paper);
+	font-family: var(--sans);
+	font-size: 17px;
+	line-height: 1.5;
+	font-stretch: 100%;
+	-webkit-font-smoothing: antialiased;
+	overflow-x: hidden;
+}
+
+::selection {
+	background: var(--accent);
+	color: var(--paper);
+}
+
+a {
+	color: inherit;
+}
+
+.mono {
+	font-family: var(--mono);
+	font-size: 12px;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+	margin: 0;
+	font-weight: 700;
+}
+
+p {
+	margin: 0;
+}
