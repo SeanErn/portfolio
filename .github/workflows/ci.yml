@@ -27,17 +27,12 @@ jobs:
           pip install "rendercv[full]==2.8"
 
       - name: Render public CV (no phone number)
-        run: |
-          rendercv render cv/resume.yaml --output-folder "$PWD/build/cv" \
-            --dont-generate-png --dont-generate-html
-          mv build/cv/Sean_Ernstes_RESUME.pdf build/cv/Sean_Ernstes_Resume.pdf
+        run: node scripts/render-cv.mjs public build/cv
 
       - uses: actions/upload-artifact@v7
         with:
           name: cv
-          path: |
-            build/cv/Sean_Ernstes_Resume.pdf
-            build/cv/*.md
+          path: build/cv/Sean_Ernstes_Resume.pdf
 
   site:
     name: Build website

@@ -10,7 +10,8 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"cv": "rendercv render cv/resume.yaml --output-folder \"$PWD/.cv-out\" --dont-generate-png --dont-generate-html --dont-generate-markdown && cp .cv-out/Sean_Ernstes_RESUME.pdf static/Sean_Ernstes_Resume.pdf"
+		"cv": "node scripts/render-cv.mjs public .cv-out && cp .cv-out/Sean_Ernstes_Resume.pdf static/Sean_Ernstes_Resume.pdf",
+		"cv:full": "node scripts/render-cv.mjs full .cv-out/full"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^8.0.0",

@@ -1,48 +1,50 @@
-name: Sync CV
+name: Private CV
 
-# When cv/resume.yaml changes, push it to the private SeanErn/cv-private repo, which renders the
-# full résumé (with the phone number) and publishes it there. Nothing private lives in this repo:
-# CV_SYNC_KEY is a deploy key that can only write to cv-private.
+# When the CV changes, render the full résumé (phone number filled in from the CV_PHONE secret) and
+# save it as a DRAFT release. Drafts are visible only to people with write access to this repo, so
+# the PDF stays private even though the repo is public. Never press "Publish" on one.
 on:
   push:
     branches: [main]
     paths:
       - cv/**
+      - scripts/render-cv.mjs
       - .github/workflows/cv.yml
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: sync-cv
+  group: private-cv
   cancel-in-progress: false
 
 jobs:
-  sync:
-    name: Push resume.yaml to cv-private
+  draft:
+    name: Render full CV as a draft release
     runs-on: ubuntu-latest
+    env:
+      CV_PHONE: ${{ secrets.CV_PHONE }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
 
-      - name: Push to SeanErn/cv-private
-        env:
-          SYNC_KEY: ${{ secrets.CV_SYNC_KEY }}
-        run: |
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$SYNC_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
 
-          git clone --depth 1 git@github.com:SeanErn/cv-private.git private
-          cp cv/resume.yaml private/resume.yaml
-          cd private
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add resume.yaml
-          if git diff --cached --quiet; then
-            echo "cv-private already has this resume.yaml."
-            exit 0
-          fi
-          git commit -m "Sync resume.yaml from portfolio@${GITHUB_SHA::7}"
-          git push origin HEAD:main
+      - name: Install RenderCV and the Carlito font
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q fonts-crosextra-carlito
+          pip install "rendercv[full]==2.8"
+
+      - name: Render full CV
+        run: node scripts/render-cv.mjs full build/cv
+
+      - name: Save as a draft release
+        run: |
+          gh release create "cv-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}" build/cv/Sean_Ernstes_Resume.pdf \
+            --draft \
+            --title "PRIVATE · do not publish · Résumé $(date -u +%Y-%m-%d)" \
+            --notes "Full résumé with phone number, rendered from cv/resume.yaml at ${GITHUB_SHA::7}. This is a draft on purpose: publishing it would make it public."

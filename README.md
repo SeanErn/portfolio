@@ -11,27 +11,28 @@ npm run build
 
 ## Résumé
 
-`cv/resume.yaml` is the source for the PDF résumé, rendered with [RenderCV](https://github.com/rendercv/rendercv) 2.8.
+`cv/resume.yaml` is the one and only copy of the résumé, rendered with [RenderCV](https://github.com/rendercv/rendercv)
+2.8 through `scripts/render-cv.mjs`. Its `phone: ${CV_PHONE}` line is a placeholder: public renders drop it, full
+renders fill it in. The number itself is never committed.
 
 ```sh
-npm run cv         # renders cv/resume.yaml → static/Sean_Ernstes_Resume.pdf
+npm run cv         # public PDF → static/Sean_Ernstes_Resume.pdf
+npm run cv:full    # full PDF → .cv-out/full/ (needs CV_PHONE in the environment or a gitignored .env)
 ```
-
-The phone number is deliberately not in the YAML, so it never lands in git history or the public PDF.
 
 ## CI
 
-- **`ci.yml`** (every push to `main` and every PR): renders a public, phone-free PDF from `cv/resume.yaml`, drops it
-  into `static/`, then runs `npm run check` and `npm run build` (artifacts `cv` and `site`).
-- **`cv.yml`** (pushes to `main` that change `cv/`, or run by hand): pushes `cv/resume.yaml` to the private
-  [SeanErn/cv-private](https://github.com/SeanErn/cv-private) repo using the `CV_SYNC_KEY` deploy key (write access to
-  that repo only). cv-private adds the phone number from its own `CV_PHONE` secret and publishes the full résumé as a
-  private release. This repo holds no phone number anywhere, so it can be public.
+- **`ci.yml`** (every push to `main` and every PR): renders the public PDF into `static/`, then runs `npm run check` and
+  `npm run build`.
+- **`cv.yml`** (pushes to `main` that touch the CV, or run by hand): renders the full PDF with the `CV_PHONE` secret and
+  saves it as a **draft** release. Drafts are only visible to people with write access, so it stays private on this
+  public repo. Never publish one.
 
 Latest full résumé:
 
 ```sh
-gh release download --repo SeanErn/cv-private --pattern '*.pdf'
+gh release download "$(gh release list --repo SeanErn/portfolio --limit 1 --json tagName --jq '.[0].tagName')" \
+  --repo SeanErn/portfolio --pattern '*.pdf'
 ```
 
 ## Layout
