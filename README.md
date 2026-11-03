@@ -37,7 +37,7 @@ gh release download --repo SeanErn/signal-path --pattern '*.pdf'
 
 - `src/lib/content.ts`: every fact the site shows
 - `src/lib/chapters/`: one component per chapter (U1 Speechify … J8 Contact)
-- `src/lib/kit/`: shared pieces (scroll pinning, chapter header, copper trace, palettes)
+- `src/lib/kit/`: shared pieces (scroll pinning, chapter header, copper trace)
 - `src/lib/scene/`: the procedural Quest 3 and the QuestNav field
 - `src/routes/simple/`: the plain, printable version
 - Debug routes: `/lab?c=<chapter>&p=<0..1>` and `/model?yaw=&pitch=&explode=`

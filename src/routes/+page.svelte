@@ -4,15 +4,9 @@
 	import Trace from '../lib/kit/Trace.svelte';
 	import { registry } from '../lib/chapters/registry';
 	import { chapters, person, resumePdf } from '../lib/content';
-	import { palettes, currentPalette, setPalette, type PaletteId } from '../lib/kit/palettes';
 
 	let progress = $state(0);
-	let palette = $state<PaletteId>('vermilion');
-	const swatch = $derived(palettes.find((p) => p.id === palette) ?? palettes[0]);
-	const nextPalette = () => {
-		const i = palettes.findIndex((p) => p.id === palette);
-		setPalette(palettes[(i + 1) % palettes.length].id);
-	};
+
 	let current = $state<(typeof chapters)[number] | null>(null);
 
 	const onScroll = () => {
@@ -21,7 +15,10 @@
 	};
 
 	onMount(() => {
-		palette = currentPalette();
+		// the 3D scene and canvases read theme colors at startup, so redraw when the OS flips light/dark
+		const scheme = matchMedia('(prefers-color-scheme: dark)');
+		const onScheme = () => location.reload();
+		scheme.addEventListener('change', onScheme);
 		// the chapter whose top most recently crossed the upper third of the screen
 		const els = [...document.querySelectorAll<HTMLElement>('[data-chapter]')];
 		const pick = () => {
@@ -31,7 +28,10 @@
 		};
 		pick();
 		addEventListener('scroll', pick, { passive: true });
-		return () => removeEventListener('scroll', pick);
+		return () => {
+			removeEventListener('scroll', pick);
+			scheme.removeEventListener('change', onScheme);
+		};
 	});
 </script>
 
@@ -51,10 +51,6 @@
 		{#if current}<b>{current.ref}</b> {current.label}{:else}Signal path · Rev 0.2{/if}
 	</span>
 	<span class="tools">
-		<button class="pal" onclick={nextPalette} title="Next palette: click to cycle">
-			<i style:background={swatch.paper} style:border-color={swatch.accent}><b style:background={swatch.accent}></b></i>
-			<span class="pal-name">{swatch.label}</span>
-		</button>
 		<a href="/simple">Simple view</a>
 		<a href={resumePdf} download>PDF</a>
 	</span>
@@ -93,8 +89,7 @@
 		mix-blend-mode: var(--chrome-blend);
 		pointer-events: none;
 	}
-	.chrome a,
-	.chrome button {
+	.chrome a {
 		pointer-events: auto;
 	}
 	.tools {
@@ -111,38 +106,8 @@
 		color: var(--accent);
 		border-color: var(--accent);
 	}
-	.pal {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		padding: 0;
-		border: 0;
-		background: none;
-		color: inherit;
-		font: inherit;
-		letter-spacing: inherit;
-		text-transform: inherit;
-		cursor: pointer;
-	}
-	.pal i {
-		position: relative;
-		width: 14px;
-		height: 14px;
-		border: 1px solid;
-	}
-	.pal b {
-		position: absolute;
-		right: 2px;
-		bottom: 2px;
-		width: 5px;
-		height: 5px;
-	}
-	.pal:hover .pal-name {
-		color: var(--accent);
-	}
 	@media (max-width: 820px) {
 		.now,
-		.pal-name,
 		.pct {
 			display: none;
 		}

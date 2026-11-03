@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-/** Drawing colors that follow the page palette (see syncPalette). */
+/** Drawing colors that follow the page theme (see syncPalette). */
 export const INK = new THREE.Color('#141413');
 export const PAPER = new THREE.Color('#e9e7e1');
 export const ACCENT = new THREE.Color('#e5461d');
@@ -77,7 +77,7 @@ export function roundedRect<T extends THREE.Path = THREE.Shape>(
 	return shape;
 }
 
-/** Pull --ink, --paper and --accent from the page so the scene matches the active palette. Call before building. */
+/** Pull --ink, --paper and --accent from the page so the scene matches the light or dark theme. Call before building. */
 export function syncPalette() {
 	const css = getComputedStyle(document.documentElement);
 	const read = (v: string, c: THREE.Color) => {

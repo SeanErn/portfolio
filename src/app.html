@@ -6,8 +6,8 @@
 		<meta name="text-scale" content="scale" />
 		<script>
 			try {
-				const p = new URLSearchParams(location.search).get('palette') || localStorage.getItem('palette');
-				if (p) document.documentElement.dataset.palette = p;
+				const s = new URLSearchParams(location.search).get('scheme');
+				if (s === 'light' || s === 'dark') document.documentElement.dataset.scheme = s;
 			} catch {}
 		</script>
 		%sveltekit.head%
