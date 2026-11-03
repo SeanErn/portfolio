@@ -1,16 +1,20 @@
 import * as THREE from 'three';
 import { buildHeadset } from './headset/index';
 import { syncPalette } from './materials';
-import { buildField, buildRobot, FIELD_CENTER, type Pose } from './field';
+import { buildField, FIELD, FIELD_CENTER, toScene, type Pose } from './field';
+import { buildRobot2025, type RobotPose } from './robot/index';
 
 /**
  * Everything is keyed to `s`: how far through the story section the reader has scrolled,
  * in viewport heights (0 … STORY_LENGTH). Keyframes below are in the same unit, so the
  * copy in Story.svelte and the 3D can be lined up by eye.
  */
-export const STORY_LENGTH = 660;
+export const STORY_LENGTH = 770;
 
 type V3 = [number, number, number];
+
+/** The red half of the field, where the drive happens. */
+const RED_HALF = toScene(FIELD.length * 0.75, FIELD.width / 2);
 type Keys<T> = [number, T][];
 
 const ease = (t: number) => t * t * (3 - 2 * t);
@@ -45,8 +49,10 @@ const T = {
 		[320, [-10.0, 8.3, 7.4]],
 		[395, [-10.9, 9.1, 8.9]],
 		[455, [2.5, 1.55, 3.3]],
-		[525, [FIELD_CENTER.x - 1.4, 14.6, 17.4]],
-		[640, [FIELD_CENTER.x - 0.6, 24.5, 6.0]]
+		[525, [RED_HALF.x - 1.0, 13.5, RED_HALF.z + 15.5]],
+		[600, [FIELD_CENTER.x - 0.4, 31.0, FIELD_CENTER.z + 7.6]],
+		[622, [FIELD_CENTER.x - 0.4, 31.0, FIELD_CENTER.z + 7.6]]
+		// …then down to the scoring close-up (added in createStage, once the structure is placed)
 	] as Keys<V3>,
 	camTarget: [
 		[0, [-0.55, 1.75, 0]],
@@ -55,8 +61,9 @@ const T = {
 		[320, [0.65, 2.2, -0.7]],
 		[395, [0.65, 2.2, -0.7]],
 		[455, [0.3, 0.35, 0]],
-		[525, [FIELD_CENTER.x - 0.7, 0, FIELD_CENTER.z - 0.3]],
-		[640, [FIELD_CENTER.x - 0.6, 0, FIELD_CENTER.z + 0.2]]
+		[525, [RED_HALF.x - 0.6, 0, RED_HALF.z - 0.4]],
+		[600, [FIELD_CENTER.x - 0.4, 0, FIELD_CENTER.z + 0.2]],
+		[622, [FIELD_CENTER.x - 0.4, 0, FIELD_CENTER.z + 0.2]]
 	] as Keys<V3>,
 	rotY: [
 		[0, 0.62],
@@ -81,6 +88,11 @@ const T = {
 		[395, 0],
 		[455, 1]
 	] as Keys<number>,
+	/** Head strap and face pad come off as the headset heads for the robot. */
+	strip: [
+		[392, 0],
+		[438, 1]
+	] as Keys<number>,
 	robot: [
 		[395, 0],
 		[445, 1]
@@ -91,9 +103,40 @@ const T = {
 	] as Keys<number>,
 	drive: [
 		[470, 0],
-		[635, 1]
+		[650, 1]
+	] as Keys<number>,
+	// the finale: square up to the branch, raise, tip the coral onto it
+	elevator: [
+		[632, 0],
+		[692, 1]
+	] as Keys<number>,
+	wrist: [
+		[668, 0],
+		[712, 1]
+	] as Keys<number>,
+	coral: [
+		[738, 0],
+		[770, 0.12]
+	] as Keys<number>,
+	/** How far up the subject is pushed on tall screens (fraction of the height); the HUD sits on top in the finale. */
+	portraitLift: [
+		[622, 0.2],
+		[712, 0.1]
+	] as Keys<number>,
+	/** Most the camera pulls back on narrow screens. */
+	fitCap: [
+		[622, 2.9],
+		[712, 2.0]
 	] as Keys<number>
 };
+
+/** Realistic size on the robot: the Quest 3 is ~0.19 m wide (≈2.6 headset units). */
+const MOUNTED_SCALE = 0.07;
+/** The headset's visor center, in its own units (index.ts shifts the parts +0.9 z). */
+const VISOR_CENTER_Z = 0.9;
+const STOWED: RobotPose = { elevator: 0, wrist: 0, coral: 0 };
+/** Wrist angle the finale ends on (coral still in the end effector); the elevator goes as high as the branch needs. */
+const SCORING_WRIST = 0.6;
 
 export const CALLOUTS = [
 	{ id: 'rgb', label: 'RGB cameras', sub: 'color passthrough', win: [115, 140, 220, 240], dx: -30, dy: -160 },
@@ -145,10 +188,46 @@ export function createStage(canvas: HTMLCanvasElement, opts: { reducedMotion: bo
 	const resolution = new THREE.Vector2(1, 1);
 	const headset = buildHeadset();
 	scene.add(headset.root);
-	const { robot, body, mount } = buildRobot();
-	scene.add(robot);
-	const field = buildField(resolution);
+	const robot = buildRobot2025();
+	/** Carries the robot around the field; the robot itself only scales (it rises out of the floor). */
+	const rig = new THREE.Group();
+	rig.add(robot.group);
+	scene.add(rig);
+
+	// where the coral's tip ends up for a given elevator extension, so the field can pick a branch
+	// the robot reaches and stop the robot exactly there
+	const tipAt = (elevator: number) => {
+		robot.setPose({ elevator, wrist: SCORING_WRIST, coral: 0 });
+		robot.group.updateMatrixWorld(true);
+		return robot.group.worldToLocal(robot.scoreTip.getWorldPosition(new THREE.Vector3()));
+	};
+	const field = buildField(resolution, {
+		dir: robot.scoreDir.clone().setY(0).normalize(),
+		reach(height) {
+			let lo = 0;
+			let hi = 1;
+			if (tipAt(1).y < height - 0.02) return { tip: tipAt(1), elevator: 1, ok: false };
+			for (let i = 0; i < 24; i++) {
+				const mid = (lo + hi) / 2;
+				if (tipAt(mid).y < height) lo = mid;
+				else hi = mid;
+			}
+			return { tip: tipAt(hi), elevator: hi, ok: true };
+		}
+	});
+	robot.setPose(STOWED);
 	scene.add(field.group);
+	const tip = field.branchTip;
+
+	// finale camera: low 3/4 view from the near side, framing robot, raised elevator, coral and branch
+	const focus = field.end.clone().lerp(field.branchTip, 0.45).setY(tip.y * 0.55);
+	/** The robot faces the near side at the end; the camera comes down in front of it, a little off its shoulder. */
+	const along = field.branchTip.clone().sub(field.end).setY(0).normalize();
+	const side = new THREE.Vector3(-along.z, 0, along.x);
+	if (side.z < 0) side.negate();
+	const closeCam = focus.clone().addScaledVector(side, 3.9).addScaledVector(along, -0.7).setY(focus.y + 2.5);
+	const camPosKeys: Keys<V3> = [...T.camPos, [712, closeCam.toArray() as V3]];
+	const camTargetKeys: Keys<V3> = [...T.camTarget, [712, focus.toArray() as V3]];
 
 	const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
 	const freePos = new THREE.Vector3(0, 2.2, 0);
@@ -160,6 +239,7 @@ export function createStage(canvas: HTMLCanvasElement, opts: { reducedMotion: bo
 	const target = new THREE.Vector3();
 	let width = 1;
 	let height = 1;
+	let lift = -1;
 
 	function resize(w: number, h: number) {
 		width = w;
@@ -167,33 +247,45 @@ export function createStage(canvas: HTMLCanvasElement, opts: { reducedMotion: bo
 		renderer.setSize(w, h, false);
 		resolution.set(w * renderer.getPixelRatio(), h * renderer.getPixelRatio());
 		camera.aspect = w / h;
-		// on wide screens, push the subject right so the copy column has room;
-		// on tall ones, push it up above the copy card
-		if (w / h > 1.1) camera.setViewOffset(w, h, -w * 0.13, 0, w, h);
-		else camera.setViewOffset(w, h, 0, h * 0.2, w, h);
-		camera.updateProjectionMatrix();
+		lift = -1;
 		field.setPointScale(renderer.getPixelRatio());
+	}
+
+	/** On wide screens, push the subject right so the copy column has room; on tall ones, up above the copy card. */
+	function frameSubject(s: number) {
+		const wide = width / height > 1.1;
+		const l = wide ? 0 : sample(T.portraitLift, s);
+		if (l === lift) return;
+		lift = l;
+		if (wide) camera.setViewOffset(width, height, -width * 0.13, 0, width, height);
+		else camera.setViewOffset(width, height, 0, height * l, width, height);
+		camera.updateProjectionMatrix();
 	}
 
 	function frame(s: number, time: number): Frame {
 		pointer.sx += (pointer.x - pointer.sx) * 0.06;
 		pointer.sy += (pointer.y - pointer.sy) * 0.06;
 
+		frameSubject(s);
 		// camera, pulled back on narrow screens so the subject still fits
-		const fit = Math.min(Math.max(1.45 / camera.aspect, 1), 2.9);
-		target.fromArray(sample(T.camTarget, s));
-		camera.position.fromArray(sample(T.camPos, s)).sub(target).multiplyScalar(fit).add(target);
+		// (the scoring close-up needs less: the subject is tall, and the HUD sits above it on phones)
+		const fit = Math.min(Math.max(1.45 / camera.aspect, 1), sample(T.fitCap, s));
+		target.fromArray(sample(camTargetKeys, s));
+		camera.position.fromArray(sample(camPosKeys, s)).sub(target).multiplyScalar(fit).add(target);
 		camera.lookAt(target);
 
 		// robot drives along the path
 		const robotK = sample(T.robot, s);
 		const drive = sample(T.drive, s);
 		const pose = field.truthAt(drive);
-		robot.position.set(pose.x, 0, pose.z);
-		robot.rotation.y = pose.heading;
-		robot.visible = robotK > 0.001;
-		body.scale.set(1, Math.max(robotK, 0.001), 1);
-		body.position.y = 0;
+		rig.position.set(pose.x, 0, pose.z);
+		rig.rotation.y = pose.heading;
+		rig.visible = robotK > 0.001;
+		robot.setPose({
+			elevator: sample(T.elevator, s) * field.score.elevator,
+			wrist: sample(T.wrist, s) * SCORING_WRIST,
+			coral: sample(T.coral, s)
+		});
 		field.update(sample(T.field, s), drive);
 
 		// headset: free-floating pose blended toward its mount on the robot
@@ -206,12 +298,18 @@ export function createStage(canvas: HTMLCanvasElement, opts: { reducedMotion: bo
 			0
 		);
 		freeQuat.setFromEuler(euler);
-		robot.updateMatrixWorld(true);
-		mount.getWorldPosition(mountPos);
-		mount.getWorldQuaternion(mountQuat);
+		// read the mount at full height, then let the robot rise out of the floor
+		robot.group.scale.set(1, 1, 1);
+		rig.updateMatrixWorld(true);
+		robot.mount.getWorldPosition(mountPos);
+		robot.mount.getWorldQuaternion(mountQuat);
+		mountPos.add(tmp.set(0, 0, -VISOR_CENTER_Z * MOUNTED_SCALE).applyQuaternion(mountQuat));
+		robot.group.scale.set(1, Math.max(robotK, 0.001), 1);
 		headset.root.position.lerpVectors(freePos, mountPos, m);
 		headset.root.quaternion.slerpQuaternions(freeQuat, mountQuat, m);
-		headset.root.scale.setScalar(THREE.MathUtils.lerp(1, 0.17, m));
+		// shrink geometrically so the size change reads as steady all the way down
+		headset.root.scale.setScalar(Math.pow(MOUNTED_SCALE, m));
+		headset.setStripped(sample(T.strip, s));
 		headset.setExplode(sample(T.explode, s));
 
 		renderer.render(scene, camera);
@@ -232,7 +330,7 @@ export function createStage(canvas: HTMLCanvasElement, opts: { reducedMotion: bo
 		if (s > 455) {
 			const est = field.estAt(drive);
 			const odo = field.odoAt(drive);
-			hud = { est, odo, err: Math.hypot(est.x - odo.x, est.z - odo.z), t: drive };
+			hud = { est: field.toField(est), odo: field.toField(odo), err: Math.hypot(est.x - odo.x, est.z - odo.z), t: drive };
 		}
 		return { s, callouts, hud };
 	}

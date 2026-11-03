@@ -72,7 +72,7 @@
 	});
 
 	const s = $derived(frame?.s ?? 0);
-	const hudOpacity = $derived(windowed(s, 470, 495, 700, 701));
+	const hudOpacity = $derived(windowed(s, 470, 495, STORY_LENGTH + 1, STORY_LENGTH + 2));
 </script>
 
 <section class="story chapter" id="questnav" data-chapter="questnav" bind:this={section} style:height="{STORY_LENGTH + 100}vh">
@@ -185,7 +185,7 @@
 			</article>
 		</div>
 
-		<div class="step" style:top="450vh" style:height="310vh">
+		<div class="step" style:top="450vh" style:height="{STORY_LENGTH - 350}vh">
 			<article class="card">
 				<p class="mono fig">Fig. 3 — On the field</p>
 				<h2>Wheels slip. Cameras don't.</h2>
