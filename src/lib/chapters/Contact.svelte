@@ -97,7 +97,7 @@
 			</li>
 		</ul>
 
-		<p class="mono note">Note 1. Built with SvelteKit and three.js. The headset is procedural; no model files.</p>
+		<p class="mono note">Built with SvelteKit and three.js.</p>
 	</div>
 
 	<div class="edge" bind:this={edgeEl} bind:clientWidth={w} style:height="{EH}px" aria-hidden="true">

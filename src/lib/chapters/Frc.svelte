@@ -427,11 +427,6 @@
 									</p>
 								</div>
 							</dl>
-							<ol class="mono dwg-notes" style:opacity={ease(seg(f.L, 0.86, 1))}>
-								<li>Routine on sheet 1 is illustrative, not a match log.</li>
-								<li>Awards and qualifications are career totals, not assigned to seasons.</li>
-								<li>Field drawn generic. Not to scale.</li>
-							</ol>
 						</div>
 					</div>
 
@@ -939,19 +934,6 @@
 		grid-template-columns: repeat(4, 1fr);
 		border-top: 1px solid var(--ink);
 	}
-	.dwg-notes {
-		position: absolute;
-		left: 0;
-		bottom: 0;
-		width: calc(50% - 40px);
-		margin: 0;
-		padding: 0 0 0 16px;
-		font-size: 9.5px;
-		line-height: 1.5;
-		color: var(--ink-2);
-		display: grid;
-		gap: 4px;
-	}
 	.detail-cap {
 		position: absolute;
 		right: 0;
@@ -1184,9 +1166,6 @@
 		.stats > div:nth-child(even) {
 			padding-left: 6px;
 			border-left: 1px solid var(--rule);
-		}
-		.dwg-notes {
-			display: none;
 		}
 		.detail-cap {
 			font-size: 8px;

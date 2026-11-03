@@ -402,17 +402,10 @@
 							{/each}
 						</svg>
 						<figcaption class="mono" style:opacity={1 - yz}>
-							<span>Charging cart · {String(plugged).padStart(2, '0')}/30 plugged in</span><span class="dim">illustrative</span>
+							<span>Charging cart · {String(plugged).padStart(2, '0')}/30 plugged in</span>
 						</figcaption>
 					</figure>
 				</div>
-				<p
-					class="mono yardcap"
-					style:opacity={ease(seg(p, ZOOM_B - 0.03, ZOOM_B + 0.02))}
-					style:transform="translate({Y.area.x}px, {Y.area.y + (Y.rows * Y.pitchY * Y.zf) / 2 + 4}px) translateX(-50%)"
-				>
-					{Y.cols * Y.rows} carts shown · 30 slots each · illustrative
-				</p>
 				</div></div>
 
 				<!-- copy layer -->
@@ -431,7 +424,7 @@
 						style:opacity={keysO}
 						style:transform="translate({L.mobile ? sw / 2 : lerp(sw / 2, 0, kz)}px, {L.mobile ? lerp(sh - 150, sh - 250, kz) : lerp(sh - 112, sh * 0.6, kz)}px) translateX({L.mobile ? -50 : lerp(-50, 0, kz)}%)"
 					>
-						<p class="mono lab"><b class:hot={tool}>{tool ? `Arduino HID tool ×${X}` : 'Typed by hand ×1'}</b> <span>illustrative sequence</span></p>
+						<p class="mono lab"><b class:hot={tool}>{tool ? `Arduino HID tool ×${X}` : 'Typed by hand ×1'}</b></p>
 						<p class="caps">
 							{#each st.keys.slice(-6) as key, i (st.keys.length - st.keys.slice(-6).length + i)}
 								<kbd class:now={i === Math.min(6, st.keys.length) - 1}>{key === ' ' ? 'Space' : key}</kbd>
@@ -810,14 +803,6 @@
 		height: auto;
 		overflow: visible;
 	}
-	.yardcap {
-		position: absolute;
-		left: 0;
-		top: 0;
-		font-size: 10px;
-		color: var(--ink-2);
-		white-space: nowrap;
-	}
 	.rate {
 		font-weight: 400;
 		margin-left: 8px;
@@ -876,9 +861,6 @@
 		color: var(--ink);
 		font-variant-numeric: tabular-nums;
 	}
-	.dim {
-		color: var(--ink-2);
-	}
 
 	/* ── copy layer ── */
 	.copy {
@@ -901,10 +883,6 @@
 	.lab {
 		font-size: 10px;
 		color: var(--ink-2);
-	}
-	.lab span {
-		margin-left: 10px;
-		opacity: 0.8;
 	}
 	.big {
 		font-size: clamp(52px, 6.4vw, 96px);
@@ -1024,10 +1002,6 @@
 		}
 		.keys {
 			padding: 10px 12px;
-		}
-		.lab span {
-			display: block;
-			margin: 2px 0 0;
 		}
 		kbd {
 			font-size: 11px;

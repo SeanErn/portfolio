@@ -256,7 +256,6 @@
 							</g>
 						{/if}
 					</svg>
-					<figcaption class="mono">Fig. U6 · The degree, flown as a descent. Illustration, not a real vehicle.</figcaption>
 				</figure>
 			</div>
 		{/snippet}
@@ -299,12 +298,6 @@
 		height: 100%;
 		min-height: 0;
 		overflow: visible;
-	}
-	figcaption {
-		color: var(--ink-2);
-		font-size: 10px;
-		text-align: right;
-		margin-top: 4px;
 	}
 
 	/* ---- telemetry ---- */
@@ -612,9 +605,6 @@
 		.lab {
 			margin-bottom: 4px;
 			padding-bottom: 4px;
-		}
-		figcaption {
-			display: none;
 		}
 		.yr {
 			font-size: 17px;

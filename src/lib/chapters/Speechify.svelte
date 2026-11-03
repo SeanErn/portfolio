@@ -425,7 +425,6 @@
 
 					<figcaption class="mono">
 						<span>Fig. 1 — Voice in, pipeline out</span>
-						<span>Timing illustrative</span>
 					</figcaption>
 				</figure>
 			</div>

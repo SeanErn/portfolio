@@ -488,7 +488,6 @@
 							<span class="pk" style:left="{(tx(peak[0]) + tx(peak[1])) / 20}%">peak · {CREW} crew</span>
 						</div>
 					</div>
-					<figcaption class="mono">One service day. Clock, cars and timers are illustrative; limits and totals are real.</figcaption>
 				</figure>
 			</div>
 		{/snippet}
@@ -849,14 +848,6 @@
 	.axis .pk {
 		top: -52px;
 		color: var(--ink);
-	}
-	figcaption {
-		grid-column: 2;
-		font-size: 9.5px;
-		color: var(--ink-2);
-		margin-top: 2px;
-		text-transform: none;
-		letter-spacing: 0.02em;
 	}
 
 	@media (max-width: 820px) {
