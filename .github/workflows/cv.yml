@@ -44,5 +44,5 @@ jobs:
             echo "cv-private already has this resume.yaml."
             exit 0
           fi
-          git commit -m "Sync resume.yaml from signal-path@${GITHUB_SHA::7}"
+          git commit -m "Sync resume.yaml from portfolio@${GITHUB_SHA::7}"
           git push origin HEAD:main
