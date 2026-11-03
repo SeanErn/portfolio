@@ -2,7 +2,7 @@
 
 A one-page portfolio drawn like a PCB fabrication sheet, built with SvelteKit and three.js.
 
-Live at **https://seanern.github.io/portfolio/**
+Will be served at **https://seanern.github.io/portfolio/** (not published yet; see below).
 
 ```sh
 npm install
@@ -36,6 +36,20 @@ Latest full résumé:
 gh release download "$(gh release list --repo SeanErn/portfolio --limit 1 --json tagName --jq '.[0].tagName')" \
   --repo SeanErn/portfolio --pattern '*.pdf'
 ```
+
+## Publishing the site
+
+GitHub Pages is switched off for now, and CI only deploys when the repo variable `PUBLISH_SITE` is `true`. To go
+live:
+
+```sh
+gh api -X POST repos/SeanErn/portfolio/pages -f build_type=workflow
+gh variable set PUBLISH_SITE --repo SeanErn/portfolio --body true
+gh workflow run ci.yml --repo SeanErn/portfolio
+```
+
+To take it down again: `gh variable delete PUBLISH_SITE --repo SeanErn/portfolio`, then
+`gh api -X DELETE repos/SeanErn/portfolio/pages`.
 
 ## Layout
 
