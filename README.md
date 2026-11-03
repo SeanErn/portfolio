@@ -23,14 +23,15 @@ The phone number is deliberately not in the YAML, so it never lands in git histo
 
 - **`ci.yml`** (every push to `main` and every PR): renders a public, phone-free PDF from `cv/resume.yaml`, drops it
   into `static/`, then runs `npm run check` and `npm run build` (artifacts `cv` and `site`).
-- **`cv.yml`** (pushes to `main` that change `cv/`, or run by hand): renders the full résumé with the phone number from
-  the `CV_PHONE` repo secret and publishes it as a release of this private repo. It refuses to run if the repo is ever
-  made public, since releases would become public too.
+- **`cv.yml`** (pushes to `main` that change `cv/`, or run by hand): pushes `cv/resume.yaml` to the private
+  [SeanErn/cv-private](https://github.com/SeanErn/cv-private) repo using the `CV_SYNC_KEY` deploy key (write access to
+  that repo only). cv-private adds the phone number from its own `CV_PHONE` secret and publishes the full résumé as a
+  private release. This repo holds no phone number anywhere, so it can be public.
 
 Latest full résumé:
 
 ```sh
-gh release download --repo SeanErn/signal-path --pattern '*.pdf'
+gh release download --repo SeanErn/cv-private --pattern '*.pdf'
 ```
 
 ## Layout

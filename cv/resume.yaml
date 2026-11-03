@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/rendercv/rendercv/refs/tags/v2.8/schema.json
+# Source of truth for the résumé. No phone number here: SeanErn/cv-private adds it from a secret.
 cv:
   name: Sean Ernstes
   location: Kalamazoo, MI 49009

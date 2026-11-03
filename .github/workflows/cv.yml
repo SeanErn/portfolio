@@ -1,7 +1,8 @@
-name: Publish CV
+name: Sync CV
 
-# Renders the full résumé (with the phone number from the CV_PHONE secret) and publishes it as a
-# release of this private repo, only when the CV source changes.
+# When cv/resume.yaml changes, push it to the private SeanErn/cv-private repo, which renders the
+# full résumé (with the phone number) and publishes it there. Nothing private lives in this repo:
+# CV_SYNC_KEY is a deploy key that can only write to cv-private.
 on:
   push:
     branches: [main]
@@ -11,49 +12,37 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: publish-cv
+  group: sync-cv
   cancel-in-progress: false
 
 jobs:
-  publish:
-    name: Render and publish CV
+  sync:
+    name: Push resume.yaml to cv-private
     runs-on: ubuntu-latest
-    # Releases of a public repo are public, and this PDF carries the phone number.
-    if: github.event.repository.private
-    env:
-      CV_PHONE: ${{ secrets.CV_PHONE }}
-      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v7
-        with:
-          python-version: '3.12'
-
-      - name: Install RenderCV and the Carlito font
+      - name: Push to SeanErn/cv-private
+        env:
+          SYNC_KEY: ${{ secrets.CV_SYNC_KEY }}
         run: |
-          sudo apt-get update -q
-          sudo apt-get install -y -q fonts-crosextra-carlito
-          pip install "rendercv[full]==2.8"
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SYNC_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Render full CV
-        run: |
-          if [ -z "$CV_PHONE" ]; then
-            echo "::error::The CV_PHONE secret is not set."
-            exit 1
+          git clone --depth 1 git@github.com:SeanErn/cv-private.git private
+          cp cv/resume.yaml private/resume.yaml
+          cd private
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add resume.yaml
+          if git diff --cached --quiet; then
+            echo "cv-private already has this resume.yaml."
+            exit 0
           fi
-          rendercv render cv/resume.yaml --cv.phone "$CV_PHONE" --output-folder "$PWD/build/cv" \
-            --dont-generate-png --dont-generate-html --dont-generate-markdown
-          mv build/cv/Sean_Ernstes_RESUME.pdf build/cv/Sean_Ernstes_Resume.pdf
-
-      - name: Publish as a private release
-        run: |
-          tag="cv-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
-          gh release create "$tag" build/cv/Sean_Ernstes_Resume.pdf \
-            --title "Résumé · $(date -u +%Y-%m-%d)" \
-            --notes "Rendered from cv/resume.yaml at ${GITHUB_SHA::7}." \
-            --target "$GITHUB_SHA" \
-            --latest
+          git commit -m "Sync resume.yaml from signal-path@${GITHUB_SHA::7}"
+          git push origin HEAD:main
