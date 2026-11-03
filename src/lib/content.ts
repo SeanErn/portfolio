@@ -151,4 +151,4 @@ export const activities = [
 ];
 
 /** The PDF resume served from static/. Note: it predates Speechify. */
-export const resumePdf = '/Sean_Ernstes_Resume.pdf';
+export const resumePdf = 'Sean_Ernstes_Resume.pdf';

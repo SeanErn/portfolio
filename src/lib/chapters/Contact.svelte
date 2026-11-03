@@ -6,6 +6,7 @@
 	 * under /lab the forced progress is used instead.
 	 */
 	import { getContext, onMount } from 'svelte';
+	import { asset, resolve } from '$app/paths';
 	import { FORCED_PROGRESS, clamp, seg } from '../kit/motion';
 	import { person, resumePdf } from '../content';
 
@@ -86,12 +87,12 @@
 				</a>
 			</li>
 			<li>
-				<a href={resumePdf} download>
+				<a href={asset(resumePdf)} download>
 					<span class="mono net">J8-4</span>Résumé<span class="mono path">PDF download</span>
 				</a>
 			</li>
 			<li>
-				<a href="/simple">
+				<a href={resolve('/simple')}>
 					<span class="mono net">J8-5</span>Simple view<span class="mono path">same content, no animation</span>
 				</a>
 			</li>

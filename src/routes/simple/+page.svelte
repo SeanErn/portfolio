@@ -3,6 +3,7 @@
 	 * Simple version: the whole resume as one calm, readable column. No motion, no canvas.
 	 * Same facts as the full page (all from content.ts); prints to a clean one or two pages.
 	 */
+	import { asset, resolve } from '$app/paths';
 	import {
 		activities,
 		cfa,
@@ -42,7 +43,7 @@
 <div class="page">
 	<nav class="chrome top mono" aria-label="Version">
 		<span>Simple version</span>
-		<a href="/">Open the full version</a>
+		<a href={resolve('/')}>Open the full version</a>
 	</nav>
 
 	<header class="head">
@@ -58,7 +59,7 @@
 		</ul>
 
 		<p class="chrome pdf">
-			<a class="download" href={resumePdf} download>Download résumé (PDF)</a>
+			<a class="download" href={asset(resumePdf)} download>Download résumé (PDF)</a>
 			<span class="note">The PDF predates the Speechify role.</span>
 		</p>
 	</header>
@@ -150,8 +151,8 @@
 	</main>
 
 	<footer class="chrome foot mono">
-		<a href="/">Open the full version</a>
-		<a href={resumePdf} download>Résumé PDF</a>
+		<a href={resolve('/')}>Open the full version</a>
+		<a href={asset(resumePdf)} download>Résumé PDF</a>
 	</footer>
 </div>
 

@@ -38,6 +38,9 @@ jobs:
     name: Build website
     needs: cv
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
     steps:
       - uses: actions/checkout@v7
 
@@ -52,16 +55,38 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: cv
-          path: build/cv
+          path: .cv-out
 
-      - run: cp build/cv/Sean_Ernstes_Resume.pdf static/Sean_Ernstes_Resume.pdf
+      - run: cp .cv-out/Sean_Ernstes_Resume.pdf static/Sean_Ernstes_Resume.pdf
 
       - run: npm run check
 
-      - run: npm run build
+      # tells us the path Pages serves the site from (/portfolio now, '' with a custom domain)
+      - id: pages
+        uses: actions/configure-pages@v6
 
-      - uses: actions/upload-artifact@v7
+      - run: npm run build
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+
+      - uses: actions/upload-pages-artifact@v5
         with:
-          name: site
-          path: .svelte-kit/output
-          retention-days: 14
+          path: build
+
+  deploy:
+    name: Publish to GitHub Pages
+    needs: site
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: false
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

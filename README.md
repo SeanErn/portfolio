@@ -2,6 +2,8 @@
 
 A one-page portfolio drawn like a PCB fabrication sheet, built with SvelteKit and three.js.
 
+Live at **https://seanern.github.io/portfolio/**
+
 ```sh
 npm install
 npm run dev        # http://localhost:5173
@@ -22,8 +24,8 @@ npm run cv:full    # full PDF → .cv-out/full/ (needs CV_PHONE in the environme
 
 ## CI
 
-- **`ci.yml`** (every push to `main` and every PR): renders the public PDF into `static/`, then runs `npm run check` and
-  `npm run build`.
+- **`ci.yml`** (every push to `main` and every PR): renders the public PDF into `static/`, runs `npm run check`, builds
+  the static site with the Pages base path, and on pushes to `main` publishes it to GitHub Pages.
 - **`cv.yml`** (pushes to `main` that touch the CV, or run by hand): renders the full PDF with the `CV_PHONE` secret and
   saves it as a **draft** release. Drafts are only visible to people with write access, so it stays private on this
   public repo. Never publish one.

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { asset, resolve } from '$app/paths';
 	import Hero from '../lib/kit/Hero.svelte';
 	import Trace from '../lib/kit/Trace.svelte';
 	import { registry } from '../lib/chapters/registry';
@@ -51,8 +52,8 @@
 		{#if current}<b>{current.ref}</b> {current.label}{:else}Signal path · Rev 0.2{/if}
 	</span>
 	<span class="tools">
-		<a href="/simple">Simple view</a>
-		<a href={resumePdf} download>PDF</a>
+		<a href={resolve('/simple')}>Simple view</a>
+		<a href={asset(resumePdf)} download>PDF</a>
 	</span>
 	<span class="pct" aria-hidden="true">
 		<span class="bar"><span style:transform="scaleX({progress})"></span></span>
