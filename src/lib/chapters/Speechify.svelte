@@ -3,7 +3,7 @@
 	 * U1 · Speechify. One pinned scene in three movements:
 	 *   1. a sentence is read aloud, word by word, while its waveform is recorded underneath;
 	 *   2. the analog trace collapses to a single line that fans out into six logic channels;
-	 *   3. a logic-analyzer capture of a CI/CD pipeline runs under a sweeping cursor.
+	 *   3. a logic-analyzer capture of the Firefox extension's build-to-release run under a sweeping cursor.
 	 * Everything is a pure function of the scroll progress p.
 	 */
 	import Pinned from '../kit/Pinned.svelte';
@@ -25,7 +25,7 @@
 
 	// ---- the sentence and its (illustrative) word timings --------------------------------------
 	const SENTENCE =
-		'I just joined Speechify as a software engineer, on the team behind the text-to-speech app.';
+		'I just joined Speechify as a software engineer, and I lead the Firefox extension.';
 	/** Length of the read-aloud clip in seconds (≈180 words a minute). */
 	const DUR = 5;
 
@@ -78,14 +78,14 @@
 		return 0.035;
 	};
 
-	// ---- the pipeline capture (time in arbitrary units, 0..10) ---------------------------------
+	// ---- the extension's pipeline capture (time in arbitrary units, 0..10) ---------------------------------
 	const SPAN = 10;
 	const CH = [
 		{ id: 'D0', name: 'PUSH', hi: [[0.4, 0.7]] },
 		{ id: 'D1', name: 'BUILD', hi: [[0.9, 3.4]] },
 		{ id: 'D2', name: 'TEST', hi: [[3.6, 6.2]] },
-		{ id: 'D3', name: 'DOCS', hi: [[3.6, 4.9]] },
-		{ id: 'D4', name: 'PACKAGE', hi: [[6.4, 7.6]] },
+		{ id: 'D3', name: 'LINT', hi: [[3.6, 4.9]] },
+		{ id: 'D4', name: 'SIGN', hi: [[6.4, 7.6]] },
 		{ id: 'D5', name: 'RELEASE', hi: [[7.8, 8.3], [8.5, 9.0], [9.2, 9.7]] }
 	] as const;
 	const T_FIRST = 0.4;
@@ -261,11 +261,11 @@
 						</p>
 					</div>
 					<div class="cap" style:opacity={f.capIn} style:transform="translateY({(1 - f.capIn) * 12}px)">
-						<p class="mono label"><span class="k">First project</span><span>Most likely</span></p>
-						<p class="lead">CI/CD.</p>
+						<p class="mono label"><span class="k">Project</span><span>Lead</span></p>
+						<p class="lead">Firefox extension.</p>
 						<p class="body">
-							I've built one before: the QuestNav pipeline on GitHub Actions, with automated builds, doc
-							generation and multi-target releases.
+							Speechify in Firefox: the add-on that reads any web page aloud. I'm the engineer leading
+							it.
 						</p>
 					</div>
 				</div>
@@ -424,7 +424,7 @@
 					</div>
 
 					<figcaption class="mono">
-						<span>Fig. 1 — Voice in, pipeline out</span>
+						<span>Fig. 1 — Voice in, add-on out</span>
 					</figcaption>
 				</figure>
 			</div>

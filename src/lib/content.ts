@@ -10,7 +10,7 @@ export const person = {
 	email: 'seanern@gatech.edu',
 	github: 'https://github.com/SeanErn',
 	linkedin: 'https://www.linkedin.com/in/seanernstes',
-	seeking: 'SoC, chip and PCB design co-ops starting fall 2027'
+	seeking: 'Software engineering, SoC, chip and PCB design co-ops or internships starting fall 2027'
 };
 
 /** Reference designators double as chapter ids and nav labels, silkscreen-style. */
@@ -33,8 +33,7 @@ export const speechify = {
 	role: 'Software Engineer',
 	when: 'Now',
 	where: 'Remote',
-	// Sean is new here; the first project is likely CI/CD. Don't claim more than that.
-	notes: ['Software engineer on the team behind the text-to-speech app.', 'First project: most likely CI/CD.']
+	notes: ['Software engineer on the team behind the text-to-speech app.', 'Leads the Firefox extension.']
 };
 
 export const questnav = {

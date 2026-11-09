@@ -17,7 +17,7 @@ cv:
   custom_connections:
   sections:
     professional_summary:
-      - Computer Engineering student with hands-on robotics software experience, including a cross-platform Visual SLAM pipeline (Unity/C#, Java) adopted by teams worldwide with 150+ GitHub stars and 400+ commits. Skilled in Java, C#, computer vision, sensor fusion, and Kalman filtering. Led a 7-person software team to 12+ awards and a 4-person IT crew that deployed 2,200+ devices 12x faster via automation. 4.0 GPA. Seeking SoC, chip, or PCB design co-ops starting fall 2027.
+      - Computer Engineering student with hands-on robotics software experience, including a cross-platform Visual SLAM pipeline (Unity/C#, Java) adopted by teams worldwide with 150+ GitHub stars and 400+ commits. Skilled in Java, C#, computer vision, sensor fusion, and Kalman filtering. Led a 7-person software team to 12+ awards and a 4-person IT crew that deployed 2,200+ devices 12x faster via automation. 4.0 GPA. Seeking software engineering, SoC, chip, or PCB design co-ops or internships starting fall 2027.
     education:
       - institution: Georgia Institute of Technology
         area: Computer Engineering
