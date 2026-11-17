@@ -61,14 +61,15 @@ jobs:
 
       - run: npm run check
 
-      # tells us the path Pages serves the site from (/portfolio now, '' with a custom domain)
+      # tells us the path Pages serves the site from: '' on the custom domain (sean.ernstes.dev),
+      # /portfolio without one. Used as-is: '' is a real answer, so no || fallback (it would eat it).
       - id: pages
         if: vars.PUBLISH_SITE == 'true'
         uses: actions/configure-pages@v6
 
       - run: npm run build
         env:
-          BASE_PATH: ${{ steps.pages.outputs.base_path || format('/{0}', github.event.repository.name) }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
       - if: vars.PUBLISH_SITE == 'true'
         uses: actions/upload-pages-artifact@v5

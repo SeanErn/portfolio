@@ -2,7 +2,7 @@
 
 A one-page portfolio drawn like a PCB fabrication sheet, built with SvelteKit and three.js.
 
-Will be served at **https://seanern.github.io/portfolio/** (not published yet; see below).
+Live at **https://sean.ernstes.dev/** (GitHub Pages, custom domain).
 
 ```sh
 npm install
